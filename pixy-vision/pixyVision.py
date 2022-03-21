@@ -3,6 +3,8 @@ import pixy
 from ctypes import *
 from pixy import *
 from constants import *
+from networktables import NetworkTablesInstance
+
 
 #Main function
 def main():
@@ -10,10 +12,33 @@ def main():
 
   #Init pixy and change mode to color connected components
   pixy.init ()
-  pixy.change_prog("color_connected_components")
+  print("Pixy init succeeded")
 
+  pixy.change_prog("color_connected_components")
+  print("Pixy change_prog succeeded")
+  
   #Define BlockArray which will be used to get a list of objects that the pixy detects
   blocks = BlockArray(100)
+
+  team = 6500
+  server = True
+  # start NetworkTables
+  ntinst = NetworkTablesInstance.getDefault()
+  if server:
+      print("Setting up NetworkTables server")
+      ntinst.startServer()
+  elif team == 9999:
+      addr = "192.168.4.47"
+      print("Connecting to server at {}".format(addr))
+      ntinst.startClient(addr)
+      ntinst.startDSClient()
+  else:
+      print("Setting up NetworkTables client for team {}".format(team))
+      ntinst.startClientTeam(team)
+      ntinst.startDSClient()
+
+  sd = ntinst.getTable("SmartDashboard")
+
 
   #Main loop
   while True:
@@ -50,6 +75,8 @@ def main():
             
       #Print results
       print("Found {0} objects of signture {1}, closest distance: {2}".format(targetSignatureCount, constants.TEST_BALL_SIG, closestObjectDistance))
+
+      sd.putNumber("target offset", closestObjectDistance)
 
         
 
