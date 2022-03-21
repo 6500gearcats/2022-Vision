@@ -1,13 +1,72 @@
 from __future__ import print_function
 import pixy 
+import time
+import json
 from ctypes import *
 from pixy import *
 from constants import *
 from networktables import NetworkTablesInstance
+from networktables import NetworkTables
+
+
+configFile = "/boot/frc.json"
+
+class CameraConfig: pass
+
+team = None
+server = False
+
+def parseError(str):
+    """Report parse error."""
+    print("config error in '" + configFile + "': " + str, file=sys.stderr)
+
+def readConfig():
+    """Read configuration file."""
+    global team
+    global server
+
+    # parse file
+    try:
+        with open(configFile, "rt", encoding="utf-8") as f:
+            j = json.load(f)
+    except OSError as err:
+        print("could not open '{}': {}".format(configFile, err), file=sys.stderr)
+        return False
+
+    # top level must be an object
+    if not isinstance(j, dict):
+        parseError("must be JSON object")
+        return False
+
+    # team number
+    try:
+        team = j["team"]
+        print("Team set to {}".format(team))
+    except KeyError:
+        parseError("could not read team number")
+        return False
+
+    # ntmode (optional)
+    if "ntmode" in j:
+        str = j["ntmode"]
+        if str.lower() == "client":
+            server = False
+        elif str.lower() == "server":
+            server = True
+        else:
+            parseError("could not understand ntmode value '{}'".format(str))
+
+    return True
+
 
 
 #Main function
 def main():
+
+  # read configuration
+  if not readConfig():
+      sys.exit(1)
+
   print("Starting pixy...")
 
   #Init pixy and change mode to color connected components
@@ -20,8 +79,6 @@ def main():
   #Define BlockArray which will be used to get a list of objects that the pixy detects
   blocks = BlockArray(100)
 
-  team = 6500
-  server = True
   # start NetworkTables
   ntinst = NetworkTablesInstance.getDefault()
   if server:
@@ -37,14 +94,19 @@ def main():
       ntinst.startClientTeam(team)
       ntinst.startDSClient()
 
-  sd = ntinst.getTable("SmartDashboard")
+  sd = NetworkTables.getTable("SmartDashboard")
 
 
   #Main loop
   while True:
 
     #Get number of objects that the pixy detcts
-    count = pixy.ccc_get_blocks (100, blocks)
+    try:
+      count = pixy.ccc_get_blocks (100, blocks)
+    except:
+      print ("pixy returned error, wait 1 sec")
+      time.sleep(1)
+
     targetSignatureCount: int = 0
 
     #If the pixy detects an object...
@@ -78,7 +140,8 @@ def main():
 
       sd.putNumber("target offset", closestObjectDistance)
 
-        
+
+
 
 #Returns a percentage that reflects where value falls in between min and max value
 def translate(value, oldMin, oldMax, newMin, newMax):
