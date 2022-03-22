@@ -73,6 +73,9 @@ def main():
   pixy.init ()
   print("Pixy init succeeded")
 
+  pixy.set_lamp(1,0)
+  
+
   pixy.change_prog("color_connected_components")
   print("Pixy change_prog succeeded")
   
