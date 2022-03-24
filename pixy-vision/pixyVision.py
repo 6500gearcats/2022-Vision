@@ -9,6 +9,11 @@ from networktables import NetworkTablesInstance
 from networktables import NetworkTables
 
 
+# To see messages from networktables, you must setup logging
+import logging
+
+logging.basicConfig(level=logging.DEBUG)
+
 configFile = "/boot/frc.json"
 
 class CameraConfig: pass
@@ -100,8 +105,23 @@ def main():
   sd = NetworkTables.getTable("SmartDashboard")
 
 
+  # ntinst.enableVerboseLogging()
+
+  if not (ntinst.isServer()):
+    while not (ntinst.isConnected()):
+      time.sleep(1)
+
+
+  fms = ntinst.getTable("FMSInfo")
+
+  alliance = fms.getValue("IsRedAlliance", True)
+
+  print ("IsRedAlliance: {}".format(alliance))
+
+  
   #Main loop
   while True:
+
 
     #Get number of objects that the pixy detcts
     try:
