@@ -114,11 +114,18 @@ def main():
 
   fms = ntinst.getTable("FMSInfo")
 
-  alliance = fms.getValue("IsRedAlliance", True)
+  redAlliance = fms.getValue("IsRedAlliance", True)
 
   print ("IsRedAlliance: {}".format(alliance))
 
-  
+  targetColor: int = 0
+
+  if redAlliance:
+      targetColor = constants.RED_BALL_SIG
+  else:
+      targetColor = constants.BLUE_BALL_SIG
+
+
   #Main loop
   while True:
 
@@ -132,6 +139,8 @@ def main():
 
     targetSignatureCount: int = 0
 
+    
+
     #If the pixy detects an object...
     if count > 0:
 
@@ -143,23 +152,26 @@ def main():
 
         #Define block object and signature var
         block = blocks[index]
+        aspectRatio = block.m_width / block.m_height
         signature: int = block.m_signature
+        print("Index {0}: width={1} height={2} aspectRatio={3}".format(index, block.m_width, block.m_height, aspectRatio) )
+        closestObjectDistance: float = 99
 
         #Map x value from pixy to -1 and 1
-        distance: float = translate(block.m_x, 0, pixyConstants.WIDTH, -1, 1)
+        if (aspectRatio < 4):
+            distance: float = translate(block.m_x, 0, pixyConstants.WIDTH, -1, 1)
+        
+            #Check to see if the signture matches
+            if(signature == targetColor):
+                #Increase the target signature count
+                targetSignatureCount += 1
 
-        #Check to see if the signture matches
-        if(signature == constants.TEST_BALL_SIG):
-
-          #Increase the target signature count
-          targetSignatureCount += 1
-
-          #Check to see if the distance is closest or if the closest distance has not been assigned
-          if(closestObjectDistance == None or distance > closestObjectDistance):
-            closestObjectDistance = distance
+            #Check to see if the distance is closest or if the closest distance has not been assigned
+            if(closestObjectDistance == 99 or distance > closestObjectDistance):
+                closestObjectDistance = distance
             
       #Print results
-      print("Found {0} objects of signture {1}, closest distance: {2}".format(targetSignatureCount, constants.TEST_BALL_SIG, closestObjectDistance))
+      print("Found {0} objects of signture {1}, closest distance: {2}, index {3}".format(targetSignatureCount, constants.TEST_BALL_SIG, closestObjectDistance, index))
 
       sd.putNumber("target offset", closestObjectDistance)
 
