@@ -129,6 +129,20 @@ def main():
   #Main loop
   while True:
 
+    fms = ntinst.getTable("FMSInfo")
+
+    redAlliance = fms.getValue("IsRedAlliance", True)
+
+    if redAlliance:
+      targetColor = 1 # constants.RED_BALL_SIG
+    else:
+      targetColor = 2 # constants.BLUE_BALL_SIG
+
+
+    print ("IsRedAlliance: {}".format(redAlliance))
+
+    sd.putNumber("target Color", targetColor)
+
     print ("TargetColorIs: {}".format(targetColor))
     #Get number of objects that the pixy detcts
     try:
@@ -136,6 +150,9 @@ def main():
     except:
       print ("pixy returned error, wait 1 sec")
       time.sleep(1)
+
+
+
 
     targetSignatureCount: int = 0
 
@@ -171,7 +188,7 @@ def main():
                 closestObjectDistance = distance
             
       #Print results
-      print("Found {0} objects of signture {1}, closest distance: {2}, index {3}".format(targetSignatureCount, constants.TEST_BALL_SIG, closestObjectDistance, index))
+      print("Found {0} objects of signture {1}, closest distance: {2}, index {3}".format(targetSignatureCount, targetColor, closestObjectDistance, index))
 
       sd.putNumber("target offset", closestObjectDistance)
 
