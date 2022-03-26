@@ -7,6 +7,7 @@ from pixy import *
 from constants import *
 from networktables import NetworkTablesInstance
 from networktables import NetworkTables
+import datetime
 
 
 # To see messages from networktables, you must setup logging
@@ -139,11 +140,11 @@ def main():
       targetColor = 2 # constants.BLUE_BALL_SIG
 
 
-    print ("IsRedAlliance: {}".format(redAlliance))
+    # print ("IsRedAlliance: {}".format(redAlliance))
 
     sd.putNumber("target Color", targetColor)
 
-    print ("TargetColorIs: {}".format(targetColor))
+    # print ("TargetColorIs: {}".format(targetColor))
     #Get number of objects that the pixy detcts
     try:
       count = pixy.ccc_get_blocks (100, blocks)
@@ -156,13 +157,12 @@ def main():
 
     targetSignatureCount: int = 0
 
+    #Define the closest object
+    closestObjectDistance: float = 99
     
 
     #If the pixy detects an object...
     if count > 0:
-
-      #Define the closest object
-      closestObjectDistance: float = None
 
       #Loop through each block every frame
       for index in range (0, count):
@@ -171,8 +171,7 @@ def main():
         block = blocks[index]
         aspectRatio = block.m_width / block.m_height
         signature: int = block.m_signature
-        print("Index {0}: width={1} height={2} aspectRatio={3}".format(index, block.m_width, block.m_height, aspectRatio) )
-        closestObjectDistance: float = 99
+        # print("Index {0}: width={1} height={2} aspectRatio={3}".format(index, block.m_width, block.m_height, aspectRatio) )
 
         #Map x value from pixy to -1 and 1
         if (aspectRatio < 4):
@@ -186,11 +185,14 @@ def main():
             #Check to see if the distance is closest or if the closest distance has not been assigned
             if(closestObjectDistance == 99 or distance > closestObjectDistance):
                 closestObjectDistance = distance
-            
-      #Print results
-      print("Found {0} objects of signture {1}, closest distance: {2}, index {3}".format(targetSignatureCount, targetColor, closestObjectDistance, index))
 
-      sd.putNumber("target offset", closestObjectDistance)
+    else:
+        closestObjectDistance = 99
+            
+    #Print results
+    print("Found {0} objects of signture {1}, closest distance: {2}".format(targetSignatureCount, targetColor, closestObjectDistance))
+
+    sd.putNumber("target offset", closestObjectDistance)
 
 
 
