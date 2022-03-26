@@ -116,20 +116,20 @@ def main():
 
   redAlliance = fms.getValue("IsRedAlliance", True)
 
-  print ("IsRedAlliance: {}".format(alliance))
+  print ("IsRedAlliance: {}".format(redAlliance))
 
   targetColor: int = 0
 
   if redAlliance:
-      targetColor = constants.RED_BALL_SIG
+      targetColor = 1 # constants.RED_BALL_SIG
   else:
-      targetColor = constants.BLUE_BALL_SIG
+      targetColor = 2 # constants.BLUE_BALL_SIG
 
 
   #Main loop
   while True:
 
-
+    print ("TargetColorIs: {}".format(targetColor))
     #Get number of objects that the pixy detcts
     try:
       count = pixy.ccc_get_blocks (100, blocks)
